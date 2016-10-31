@@ -1,6 +1,6 @@
 {
   "wkhtmltopdf": {
-    "commandFormat": "{exec} {options} {url} {output}",
+    "commandFormat": "{exec} {options} {url} {output} 2>&1",
     "exec": "/path/to/exec",
     "outputFormat": "/path/to/output/dir/{year}/{month}/{day}/{hour}/{minute}/",
     "fileFormat": "{hash}.{format}",
