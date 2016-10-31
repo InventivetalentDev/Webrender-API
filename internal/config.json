@@ -6,15 +6,62 @@
     "fileFormat": "{hash}.{format}",
     "urlFormat": "http://url-to-image.com/{year}/{month}/{day}/{hour}/{minute}/{hash}.{format}",
     "allowedOptions": [
-      "crop-h",
-      "crop-w",
-      "crop-x",
-      "crop-y",
-      "height",
-      "width",
-      "quality",
-      "zoom",
-      "javascript-delay"
+      {
+        "key": "crop-h",
+        "type": "number"
+      },
+      {
+        "key": "crop-w",
+        "type": "number"
+      },
+      {
+        "key": "crop-x",
+        "type": "number"
+      },
+      {
+        "key": "crop-y",
+        "type": "number"
+      },
+      {
+        "key": "format",
+        "type": "string"
+      },
+      {
+        "key": "height",
+        "type": "number"
+      },
+      {
+        "key": "width",
+        "type": "number"
+      },
+      {
+        "key": "zoom",
+        "type": "number"
+      },
+      {
+        "key": "images",
+        "type": "boolean",
+        "changeTo": {
+          "true": "images",
+          "false": "no-images"
+        }
+      },
+      {
+        "key": "javascript",
+        "type": "boolean",
+        "changeTo": {
+          "true": "enable-javascript",
+          "false": "disable-javascript"
+        }
+      },
+      {
+        "key": "quality",
+        "type": "number",
+        "boundaries": {
+          "min": 0,
+          "max": 100
+        }
+      }
     ]
   },
   "expiration": "+ 1 hour"

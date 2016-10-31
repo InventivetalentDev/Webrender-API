@@ -31,15 +31,30 @@ $app->any("/render", function () use ($app) {
     }
     $format = $app->request()->params("format", "png");
     $redirect = $app->request()->params("redirect", false);
+    $optionsJson = $app->request()->params("options", "{}");
+
+    $renderOptions = $app->renderOptions["wkhtmltopdf"];
 
     $hash = sha1($url . microtime(true));
-    $optionsString = "";//TODO
 
-    //TODO: Options, Format, Name, etc.
+    $validOptions = array();
+    try {
+        $validOptions = json_decode($optionsJson, true);
+    } catch (Exception $e) {
+        echoData(array("error" => "Invalid options JSON"), 400);
+        exit();
+    }
+    if (($validOptions = parseOptions($validOptions, $renderOptions["allowedOptions"], $optionsError)) === false) {
+        echoData(array("error" => $optionsError), 400);
+        exit();
+    }
+    $optionsString = "";
+    foreach ($validOptions as $oKey => $oValue) {
+        $optionsString .= "--$oKey $oValue ";
+    }
 
     $startTime = microtime(true);
 
-    $renderOptions = $app->renderOptions["wkhtmltopdf"];
     $exec = $renderOptions["exec"];
     $outputFormat = $renderOptions["outputFormat"];
     $fileFormat = $renderOptions["fileFormat"];
@@ -72,7 +87,9 @@ $app->any("/render", function () use ($app) {
     ), $commandFormat);
 
     //Run wkhtmltopdf
+    touch($outputFile);
     $finalOutput = exec($command, $renderOutput, $returnVar);
+    chmod($outputFile, 0777);
 
     $endTime = microtime(true);
     $duration = $endTime - $startTime;
@@ -85,6 +102,7 @@ $app->any("/render", function () use ($app) {
                 "hash" => $hash,
                 "url" => $url,
                 "format" => $format,
+                "options" => $validOptions,
                 "time" => time(),
                 "duration" => $duration,
                 "expiration" => strtotime($app->renderOptions["expiration"]),
@@ -119,6 +137,66 @@ function replaceVariables($variables, $target)
         $target = str_replace($variable, $value, $target);
     }
     return $target;
+}
+
+function parseOptions($specifiedOptions, $allowedOptions, &$errorMessage)
+{
+    if (empty($specifiedOptions)) {// There are no options
+        return array();
+    }
+
+    $validOptions = array();
+    $ignoredOptions = array();//TODO
+
+    foreach ($allowedOptions as $allowed) {
+        $key = $allowed["key"];
+        if (isset($specifiedOptions[$key])) {
+            $value = $specifiedOptions[$key];
+            switch ($allowed["type"]) {
+                case "number": {
+                    if (!is_numeric($value)) {
+                        $errorMessage = "Option '$key' must be a number";
+                        return false;
+                    }
+                    if (isset($allowed["boundaries"])) {
+                        if ($value < $allowed["boundaries"]["min"]) {
+                            $errorMessage = "Value for '$key' must not be smaller than " . $allowed["boundaries"]["min"];
+                            return false;
+                        }
+                        if ($value > $allowed["boundaries"]["max"]) {
+                            $errorMessage = "Value for '$key' must not be larger than " . $allowed["boundaries"]["max"];
+                            return false;
+                        }
+                    }
+                    break;
+                }
+                case "boolean": {
+                    if (isset($allowed["changeTo"])) {// Change the option key based on the boolean
+                        if (true === $value) {
+                            $key = $allowed["changeTo"]["true"];
+                        } else if (false === $value) {
+                            $key = $allowed["changeTo"]["false"];
+                        } else {
+                            //Whatever
+                        }
+                    } else {
+                        if ("false" === $value) {
+                            continue;// Skip the option if it's specifically 'false'; treat anything else as true
+                        }
+                    }
+                    $value = "";// remove the value
+                    break;
+                }
+                case "string": {
+                    break;
+                }
+            }
+
+            $validOptions[$key] = $value;
+        }
+    }
+
+    return $validOptions;
 }
 
 function echoData($json, $status = 0)
