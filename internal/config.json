@@ -1,0 +1,21 @@
+{
+  "wkhtmltopdf": {
+    "command": "{exec} {options} {url} {output}",
+    "exec": "/path/to/exec",
+    "output": "/path/to/output/dir/{year}/{month}/{day}/{hour}/{minute}/",
+    "outputFormat": "{hash}.{format}",
+    "urlFormat": "http://url-to-image.com/{year}/{month}/{day}/{hour}/{minute}/{hash}.{format}",
+    "allowedOptions": [
+      "crop-h",
+      "crop-w",
+      "crop-x",
+      "crop-y",
+      "height",
+      "width",
+      "quality",
+      "zoom",
+      "javascript-delay"
+    ]
+  },
+  "expiration": "+ 1 hour"
+}
