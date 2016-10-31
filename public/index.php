@@ -109,7 +109,7 @@ $app->any("/render", function () use ($app) {
 
 $app->run();
 
-function replaceVariables($variables, &$target)
+function replaceVariables($variables, $target)
 {
     foreach ($variables as $variable => $value) {
         $target = str_replace($variable, $value, $target);
