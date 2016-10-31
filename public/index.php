@@ -37,6 +37,7 @@ $app->any("/render", function () use ($app) {
 
     //TODO: Options, Format, Name, etc.
 
+    $startTime = microtime(true);
 
     $renderOptions = $app->renderOptions["wkhtmltopdf"];
     $exec = $renderOptions["exec"];
@@ -73,6 +74,9 @@ $app->any("/render", function () use ($app) {
     //Run wkhtmltopdf
     $finalOutput = exec($command, $renderOutput, $returnVar);
 
+    $endTime = microtime(true);
+    $duration = $endTime - $startTime;
+
     if ($returnVar === 0 && file_exists($outputFile)) {
         if ($redirect) {
             header("Location: $imageUrl");
@@ -82,6 +86,7 @@ $app->any("/render", function () use ($app) {
                 "url" => $url,
                 "format" => $format,
                 "time" => time(),
+                "duration" => $duration,
                 "expiration" => strtotime($app->renderOptions["expiration"]),
                 "image" => $imageUrl,
                 "render" => array(
