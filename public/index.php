@@ -71,7 +71,7 @@ $app->any("/render", function () use ($app) {
     ), $commandFormat);
 
     //Run wkhtmltopdf
-    $finalOutput = exec($command, $outputFormat, $returnVar);
+    $finalOutput = exec($command, $renderOutput, $returnVar);
 
     if ($returnVar === 0 && file_exists($outputFile)) {
         if ($redirect) {
@@ -95,12 +95,14 @@ $app->any("/render", function () use ($app) {
                     "output" => $outputFormat,
                     "file" => $fileFormat
                 ),
+                "url" => $url,
                 "command" => $command,
                 "file" => $outputFile,
                 "render" => array(
                     "status" => $returnVar,
-                    "output" => $outputFormat,
-                    "finalOutput" => $finalOutput
+                    "output" => $renderOutput,
+                    "finalOutput" => $finalOutput,
+                    "options" => $app->renderOptions
                 ))), 500);
     }
 });
