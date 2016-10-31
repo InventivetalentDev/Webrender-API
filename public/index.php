@@ -83,26 +83,25 @@ $app->any("/render", function () use ($app) {
                 "format" => $format,
                 "time" => time(),
                 "expiration" => strtotime($app->renderOptions["expiration"]),
-                "image" => $imageUrl
+                "image" => $imageUrl,
+                "render" => array(
+                    "status" => $returnVar,
+                    "output" => $renderOutput,
+                    "finalOutput" => $finalOutput
+                )
             ), 200);
         }
     } else {
         echoData(array(
             "error" => "Rendering failed",
             "details" => array(
-                "format" => array(
-                    "command" => $commandFormat,
-                    "output" => $outputFormat,
-                    "file" => $fileFormat
-                ),
+                "message" => $finalOutput,
                 "url" => $url,
                 "command" => $command,
-                "file" => $outputFile,
                 "render" => array(
                     "status" => $returnVar,
                     "output" => $renderOutput,
-                    "finalOutput" => $finalOutput,
-                    "options" => $app->renderOptions
+                    "finalOutput" => $finalOutput
                 ))), 500);
     }
 });
