@@ -84,7 +84,7 @@ $app->any("/render", function () use ($app) {
                 "time" => time(),
                 "expiration" => strtotime($app->renderOptions["expiration"]),
                 "image" => $imageUrl
-            ));
+            ), 200);
         }
     } else {
         echoData(array(
@@ -95,7 +95,7 @@ $app->any("/render", function () use ($app) {
                     "status" => $returnVar,
                     "output" => $output,
                     "finalOutput" => $finalOutput
-                ))));
+                ))), 500);
     }
 });
 
