@@ -1,9 +1,9 @@
 {
   "wkhtmltopdf": {
-    "command": "{exec} {options} {url} {output}",
+    "commandFormat": "{exec} {options} {url} {output}",
     "exec": "/path/to/exec",
-    "output": "/path/to/output/dir/{year}/{month}/{day}/{hour}/{minute}/",
-    "outputFormat": "{hash}.{format}",
+    "outputFormat": "/path/to/output/dir/{year}/{month}/{day}/{hour}/{minute}/",
+    "fileFormat": "{hash}.{format}",
     "urlFormat": "http://url-to-image.com/{year}/{month}/{day}/{hour}/{minute}/{hash}.{format}",
     "allowedOptions": [
       "crop-h",

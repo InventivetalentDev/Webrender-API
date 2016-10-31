@@ -40,9 +40,9 @@ $app->any("/render", function () use ($app) {
 
     $renderOptions = $app->renderOptions["wkhtmltopdf"];
     $exec = $renderOptions["exec"];
-    $output = $renderOptions["output"];
     $outputFormat = $renderOptions["outputFormat"];
-    $commandFormat = $renderOptions["command"];
+    $fileFormat = $renderOptions["fileFormat"];
+    $commandFormat = $renderOptions["commandFormat"];
     $urlFormat = $renderOptions["urlFormat"];
 
     $outputVariables = array(
@@ -54,13 +54,13 @@ $app->any("/render", function () use ($app) {
         "{hash}" => $hash,
         "{format}" => $format
     );
-    $output = replaceVariables($outputVariables, $output);
-    $outputFormat = replaceVariables($outputVariables, $outputFormat);
+    $outputDir = replaceVariables($outputVariables, $outputFormat);
+    $file = replaceVariables($outputVariables, $fileFormat);
     $imageUrl = replaceVariables($outputVariables, $urlFormat);
-    $outputFile = $output . $outputFormat;
+    $outputFile = $outputDir . $file;
 
-    if (!file_exists($output)) {
-        mkdir($output, 0777, true);
+    if (!file_exists($outputDir)) {
+        mkdir($outputDir, 0777, true);
     }
 
     $command = replaceVariables(array(
@@ -71,7 +71,7 @@ $app->any("/render", function () use ($app) {
     ), $commandFormat);
 
     //Run wkhtmltopdf
-    $finalOutput = exec($command, $output, $returnVar);
+    $finalOutput = exec($command, $outputFormat, $returnVar);
 
     if ($returnVar === 0 && file_exists($outputFile)) {
         if ($redirect) {
@@ -90,10 +90,16 @@ $app->any("/render", function () use ($app) {
         echoData(array(
             "error" => "Rendering failed",
             "details" => array(
+                "format" => array(
+                    "command" => $commandFormat,
+                    "output" => $outputFormat,
+                    "file" => $fileFormat
+                ),
                 "command" => $command,
+                "file" => $outputFile,
                 "render" => array(
                     "status" => $returnVar,
-                    "output" => $output,
+                    "output" => $outputFormat,
                     "finalOutput" => $finalOutput
                 ))), 500);
     }
