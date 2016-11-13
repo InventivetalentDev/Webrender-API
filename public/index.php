@@ -55,6 +55,31 @@ $app->any("/render", function () use ($app) {
 
     $startTime = microtime(true);
 
+    $virusResult = checkVirusTotal($app, $url);
+    if (!$virusResult) {
+        echoData(array(
+            "error" => "Virus scan failed. Please try again later.",
+            "details" => $virusResult
+        ), 500);
+        exit();
+    } else {
+        if (!$virusResult["resource_scanned"]) {
+            echoData(array(
+                "error" => "URL was not yet scanned for viruses. Please try again later.",
+                "details" => $virusResult
+            ), 500);
+            exit();
+        } else if ($virusResult["score"]["positives"] > 0) {
+            echoData(array(
+                "error" => "Positive results on virus scan. Cannot render this URL.",
+                "details" => $virusResult
+            ), 400);
+            exit();
+        } else {
+            // Everything okay!
+        }
+    }
+
     $exec = $renderOptions["exec"];
     $outputFormat = $renderOptions["outputFormat"];
     $fileFormat = $renderOptions["fileFormat"];
@@ -108,6 +133,7 @@ $app->any("/render", function () use ($app) {
                 "expiration" => strtotime($app->renderOptions["expiration"]),
                 "image" => $imageUrl,
                 "size" => filesize($outputFile),
+                "virusResult" => $virusResult,
                 "render" => array(
                     "status" => $returnVar,
                     "output" => $renderOutput,
@@ -198,6 +224,54 @@ function parseOptions($specifiedOptions, $allowedOptions, &$errorMessage)
     }
 
     return $validOptions;
+}
+
+function checkVirusTotal($app, $url)
+{
+    $apiKey = $app->renderOptions["virustotal"]["api_key"];
+
+    $post = array('apikey' => $apiKey, 'resource' => $url);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://www.virustotal.com/vtapi/v2/url/report');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
+    curl_setopt($ch, CURLOPT_USERAGENT, "gzip, Webrender-API");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+
+    $result = curl_exec($ch);
+    $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if ($status_code == 200) { // OK
+        $json = json_decode($result, true);
+    } else {  // Error occured
+        $json = false;
+    }
+    curl_close($ch);
+    if ($json) {
+        $scanned = $json["response_code"] === 1;
+        if (!$scanned) {// Start a new scan
+            $post = array('apikey' => $apiKey, 'url' => $url);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://www.virustotal.com/vtapi/v2/url/scan');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+
+            curl_exec($ch);
+            curl_close($ch);
+        }
+        return array(
+            "resource_scanned" => $scanned,
+            "scan_link" => ($scanned ? $json["permalink"] : ""),
+            "scan_date" => ($scanned ? $json["scan_date"] : ""),
+            "scan_message" => $json["verbose_msg"],
+            "score" => array(
+                "positives" => ($scanned ? $json["positives"] : -1),
+                "total" => ($scanned ? $json["total"] : -1)
+            )
+        );
+    }
+    return false;
 }
 
 function echoData($json, $status = 0)

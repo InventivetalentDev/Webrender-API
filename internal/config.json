@@ -66,5 +66,8 @@
   },
   "expiration": "+ 1 hour",
   "deleteBaseDir": "/path/to/output/dir/*",
-  "deleteCommand": "find {path} -type d -mmin +60 -exec rm -rf {} \\; 2>&1"
+  "deleteCommand": "find {path} -type d -mmin +60 -exec rm -rf {} \\; 2>&1",
+  "virustotal": {
+    "api_key": ""
+  }
 }
