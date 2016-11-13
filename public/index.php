@@ -156,6 +156,10 @@ $app->any("/render", function () use ($app) {
     }
 });
 
+$app->get("/getoptions", function () use ($app) {
+    echoData($app->renderOptions["wkhtmltopdf"]["allowedOptions"]);
+});
+
 $app->run();
 
 function replaceVariables($variables, $target)
