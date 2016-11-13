@@ -89,7 +89,7 @@ $app->any("/render", function () use ($app) {
     //Run wkhtmltopdf
     touch($outputFile);
     $finalOutput = exec($command, $renderOutput, $returnVar);
-    chmod($outputFile, 0777);
+//    chmod($outputFile, 0777);
 
     $endTime = microtime(true);
     $duration = $endTime - $startTime;
@@ -107,6 +107,7 @@ $app->any("/render", function () use ($app) {
                 "duration" => $duration,
                 "expiration" => strtotime($app->renderOptions["expiration"]),
                 "image" => $imageUrl,
+                "size" => filesize($outputFile),
                 "render" => array(
                     "status" => $returnVar,
                     "output" => $renderOutput,
