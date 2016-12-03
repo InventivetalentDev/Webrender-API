@@ -80,6 +80,8 @@ $app->any("/render", function () use ($app) {
                 // Everything okay!
             }
         }
+    } else {
+        $virusResult = "Virus Scan is disabled";
     }
 
     $exec = $renderOptions["exec"];
