@@ -55,28 +55,30 @@ $app->any("/render", function () use ($app) {
 
     $startTime = microtime(true);
 
-    $virusResult = checkVirusTotal($app, $url);
-    if (!$virusResult) {
-        echoData(array(
-            "error" => "Virus scan failed. Please try again later.",
-            "details" => $virusResult
-        ), 500);
-        exit();
-    } else {
-        if (!$virusResult["resource_scanned"]) {
+    if ($app->renderOptions["virustotal"]["enabled"]) {
+        $virusResult = checkVirusTotal($app, $url);
+        if (!$virusResult) {
             echoData(array(
-                "error" => "URL was not yet scanned for viruses. Please try again later.",
+                "error" => "Virus scan failed. Please try again later.",
                 "details" => $virusResult
             ), 500);
             exit();
-        } else if ($virusResult["score"]["positives"] > 0) {
-            echoData(array(
-                "error" => "Positive results on virus scan. Cannot render this URL.",
-                "details" => $virusResult
-            ), 400);
-            exit();
         } else {
-            // Everything okay!
+            if (!$virusResult["resource_scanned"]) {
+                echoData(array(
+                    "error" => "URL was not yet scanned for viruses. Please try again later.",
+                    "details" => $virusResult
+                ), 500);
+                exit();
+            } else if ($virusResult["score"]["positives"] > 0) {
+                echoData(array(
+                    "error" => "Positive results on virus scan. Cannot render this URL.",
+                    "details" => $virusResult
+                ), 400);
+                exit();
+            } else {
+                // Everything okay!
+            }
         }
     }
 

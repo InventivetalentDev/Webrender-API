@@ -68,6 +68,7 @@
   "deleteBaseDir": "/path/to/output/dir/*",
   "deleteCommand": "find {path} -type d -mmin +60 -exec rm -rf {} \\; 2>&1",
   "virustotal": {
+    "enabled": true,
     "api_key": ""
   }
 }
