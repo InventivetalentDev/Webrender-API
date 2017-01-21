@@ -118,7 +118,7 @@ $app->any("/render", function () use ($app) {
     //Run wkhtmltopdf
     touch($outputFile);
     $finalOutput = exec($command, $renderOutput, $returnVar);
-//    chmod($outputFile, 0777);
+    chmod($outputFile, 0777);
 
     $endTime = microtime(true);
     $duration = $endTime - $startTime;
