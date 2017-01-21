@@ -109,8 +109,8 @@ $app->any("/render", function () use ($app) {
     }
 
     $command = replaceVariables(array(
-        "{exec}" => escapeshellarg($exec),
-        "{options}" => escapeshellarg($optionsString),
+        "{exec}" => $exec,
+        "{options}" => $optionsString,
         "{url}" => escapeshellarg($url),
         "{output}" => escapeshellarg($outputFile)
     ), $commandFormat);
