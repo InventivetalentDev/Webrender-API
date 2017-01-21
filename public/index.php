@@ -109,10 +109,10 @@ $app->any("/render", function () use ($app) {
     }
 
     $command = replaceVariables(array(
-        "{exec}" => $exec,
-        "{options}" => $optionsString,
-        "{url}" => $url,
-        "{output}" => $outputFile
+        "{exec}" => escapeshellarg($exec),
+        "{options}" => escapeshellarg($optionsString),
+        "{url}" => escapeshellarg($url),
+        "{output}" => escapeshellarg($outputFile)
     ), $commandFormat);
 
     //Run wkhtmltopdf
