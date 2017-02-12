@@ -10,6 +10,7 @@
     }
   ],
   "require": {
-    "slim/slim": "2.6.2"
+    "slim/slim": "2.6.2",
+    "knplabs/knp-snappy": "0.4.3"
   }
 }

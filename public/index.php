@@ -84,11 +84,12 @@ $app->any("/render", function () use ($app) {
         $virusResult = "Virus Scan is disabled";
     }
 
+
     $exec = $renderOptions["exec"];
     $outputFormat = $renderOptions["outputFormat"];
     $fileFormat = $renderOptions["fileFormat"];
-    $commandFormat = $renderOptions["commandFormat"];
     $urlFormat = $renderOptions["urlFormat"];
+
 
     $outputVariables = array(
         "{year}" => date("Y"),
@@ -108,22 +109,13 @@ $app->any("/render", function () use ($app) {
         mkdir($outputDir, 0777, true);
     }
 
-    $command = replaceVariables(array(
-        "{exec}" => $exec,
-        "{options}" => $optionsString,
-        "{url}" => escapeshellarg($url),
-        "{output}" => escapeshellarg($outputFile)
-    ), $commandFormat);
-
-    //Run wkhtmltopdf
-    touch($outputFile);
-    $finalOutput = exec($command, $renderOutput, $returnVar);
-    chmod($outputFile, 0777);
+    $snappy = new Knp\Snappy\Image($exec, $validOptions);
+    file_put_contents($outputFile, $snappy->getOutput($url));
 
     $endTime = microtime(true);
     $duration = $endTime - $startTime;
 
-    if ($returnVar === 0 && file_exists($outputFile)) {
+    if (file_exists($outputFile)) {
         if ($redirect) {
             header("Location: $imageUrl");
         } else {
@@ -137,26 +129,15 @@ $app->any("/render", function () use ($app) {
                 "expiration" => strtotime($app->renderOptions["expiration"]),
                 "image" => $imageUrl,
                 "size" => filesize($outputFile),
-                "virusResult" => $virusResult,
-                "render" => array(
-                    "status" => $returnVar,
-                    "output" => $renderOutput,
-                    "finalOutput" => $finalOutput
-                )
+                "virusResult" => $virusResult
             ), 200);
         }
     } else {
         echoData(array(
             "error" => "Rendering failed",
             "details" => array(
-                "message" => $finalOutput,
                 "url" => $url,
-                "command" => $command,
-                "render" => array(
-                    "status" => $returnVar,
-                    "output" => $renderOutput,
-                    "finalOutput" => $finalOutput
-                ))), 500);
+            )), 500);
     }
 });
 
