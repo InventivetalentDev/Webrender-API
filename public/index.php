@@ -110,7 +110,12 @@ $app->any("/render", function () use ($app) {
     }
 
     $snappy = new Knp\Snappy\Image($exec, $validOptions);
-    file_put_contents($outputFile, $snappy->getOutput($url));
+    $errorMessage = "";
+    try {
+        file_put_contents($outputFile, $snappy->getOutput($url));
+    } catch (Exception $ex) {
+        $errorMessage = $ex->getMessage();
+    }
 
     $endTime = microtime(true);
     $duration = $endTime - $startTime;
@@ -137,6 +142,7 @@ $app->any("/render", function () use ($app) {
             "error" => "Rendering failed",
             "details" => array(
                 "url" => $url,
+                "message" => $errorMessage
             )), 500);
     }
 });
